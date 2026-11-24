@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -106,12 +105,12 @@
             </div>
 
             <!-- Rules Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left mb-7">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left mb-6">
                 <div class="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-3.5">
                     <div class="text-cyan-400 font-extrabold text-sm mb-1 flex items-center gap-1.5">
                         <span>⏱️</span> 90秒タイムアタック
                     </div>
-                    <p class="text-xs text-slate-300 leading-relaxed">制限時間90秒以内に何問正解できるかで高スコアを目指します。</p>
+                    <p class="text-xs text-slate-300 leading-relaxed">4択(100pt)と並べ替え(180pt)を素早く解いて高得点を目指そう！</p>
                 </div>
                 <div class="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-3.5">
                     <div class="text-emerald-400 font-extrabold text-sm mb-1 flex items-center gap-1.5">
@@ -123,7 +122,23 @@
                     <div class="text-amber-400 font-extrabold text-sm mb-1 flex items-center gap-1.5">
                         <span>🔥</span> 5コンボで高難度突入
                     </div>
-                    <p class="text-xs text-slate-200 leading-relaxed">5コンボ以上は<span class="text-amber-300 font-bold">HARDモード</span>になり難問＆高得点（2倍）が出題！</p>
+                    <p class="text-xs text-slate-200 leading-relaxed">5コンボ以上は<span class="text-amber-300 font-bold">和訳が非表示</span>になり、難問＆高得点（2倍）が出題！</p>
+                </div>
+            </div>
+
+            <!-- Question Mode Selector -->
+            <div class="mb-6">
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">出題形式を選択 (MODE)</div>
+                <div class="grid grid-cols-3 gap-2 max-w-md mx-auto bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800" id="mode-selector">
+                    <button type="button" data-mode="mix" class="mode-option-btn py-2.5 px-2 rounded-xl text-xs sm:text-sm font-black bg-indigo-500 text-white shadow-md transition-all cursor-pointer">
+                        🎲 ミックス<span class="block text-[10px] font-normal opacity-90">4択＋並べ替え</span>
+                    </button>
+                    <button type="button" data-mode="choice" class="mode-option-btn py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+                        🔢 4択のみ<span class="block text-[10px] font-normal opacity-80">空所補充 30問</span>
+                    </button>
+                    <button type="button" data-mode="reorder" class="mode-option-btn py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+                        🧩 並べ替えのみ<span class="block text-[10px] font-normal opacity-80">語句整序 20問</span>
+                    </button>
                 </div>
             </div>
 
@@ -134,7 +149,7 @@
                     <span>🔊 効果音 ON</span>
                 </label>
                 <span class="text-slate-500 hidden sm:inline">|</span>
-                <span class="text-slate-400 text-xs">PC操作：キーボード <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">1</kbd>〜<kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">4</kbd> 対応</span>
+                <span class="text-slate-400 text-xs">4択は <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">1</kbd>〜<kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-slate-200">4</kbd> キーでも解答可能</span>
             </div>
 
             <button id="start-btn" class="w-full sm:w-auto px-12 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-black text-lg sm:text-xl shadow-lg shadow-indigo-500/30 transform transition active:scale-95 cursor-pointer">
@@ -196,26 +211,75 @@
             <!-- Question Card -->
             <div id="question-card" class="bg-slate-900/95 backdrop-blur-md border-2 border-slate-800 rounded-3xl p-5 sm:p-8 shadow-2xl transition-all duration-300 relative overflow-hidden">
                 <!-- Question Header -->
-                <div class="flex items-center justify-between text-xs text-slate-400 font-bold mb-4">
-                    <span id="question-number">Q.1</span>
+                <div class="flex items-center justify-between text-xs text-slate-400 font-bold mb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="question-number" class="text-sm text-white font-black">Q.1</span>
+                        <span id="question-type-badge" class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">4択空所補充</span>
+                    </div>
                     <span id="question-tag" class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300">標準レベル</span>
                 </div>
 
-                <!-- English Sentence -->
-                <div class="min-h-[96px] sm:min-h-[110px] flex items-center justify-center my-2">
-                    <p id="question-text" class="text-xl sm:text-2xl md:text-[26px] font-bold text-white leading-relaxed text-center tracking-wide">
-                        That is the person ( &nbsp;&nbsp;&nbsp;&nbsp; ) dog I found.
-                    </p>
+                <!-- Japanese Translation Box (Shown in Standard 0-4 combo, Hidden in 5+ combo HARD mode) -->
+                <div id="translation-box" class="mb-4 px-3.5 py-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-center transition-all duration-300">
+                    <div class="flex items-center justify-center gap-1.5 text-[11px] font-bold text-indigo-300 mb-0.5">
+                        <span>🇯🇵 日本語訳</span>
+                    </div>
+                    <p id="question-translation" class="text-sm sm:text-base font-bold text-slate-100 leading-snug"></p>
+                </div>
+
+                <!-- ========== 4-CHOICE AREA ========== -->
+                <div id="choice-mode-area">
+                    <!-- English Sentence -->
+                    <div class="min-h-[84px] sm:min-h-[96px] flex items-center justify-center my-2">
+                        <p id="question-text" class="text-xl sm:text-2xl md:text-[26px] font-bold text-white leading-relaxed text-center tracking-wide">
+                            That is the person ( &nbsp;&nbsp;&nbsp;&nbsp; ) dog I found.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ========== REORDER (語句整序) AREA ========== -->
+                <div id="reorder-mode-area" class="hidden">
+                    <div class="text-center text-xs sm:text-sm text-indigo-300 font-bold mb-3">
+                        🧩 下の語句をタップして正しい語順に並べ替えよう！
+                    </div>
+
+                    <!-- Sentence Context + Drop Slots -->
+                    <div class="bg-slate-950/80 border border-slate-700/80 rounded-2xl p-4 sm:p-5 mb-3 text-center">
+                        <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-base sm:text-xl font-bold text-white leading-relaxed">
+                            <span id="reorder-prefix" class="text-slate-200"></span>
+                            <span class="text-slate-500 font-black text-lg">(</span>
+                            <div id="reorder-answer-slots" class="inline-flex flex-wrap items-center justify-center gap-1.5 min-h-[42px] px-1">
+                                <!-- Selected word chips appear here -->
+                            </div>
+                            <span class="text-slate-500 font-black text-lg">)</span>
+                            <span id="reorder-suffix" class="text-slate-200"></span>
+                        </div>
+                    </div>
+
+                    <!-- Reorder Controls (Undo / Clear) -->
+                    <div class="flex items-center justify-end gap-2 mb-3">
+                        <button type="button" id="reorder-undo-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition active:scale-95 cursor-pointer">
+                            ↩ 1語戻す
+                        </button>
+                        <button type="button" id="reorder-clear-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition active:scale-95 cursor-pointer">
+                            🗑️ 全クリア
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Quick Inline Feedback Banner -->
-                <div id="feedback-banner" class="h-8 flex items-center justify-center mb-3">
-                    <span id="feedback-text" class="text-sm font-extrabold opacity-0 transition-opacity duration-150"></span>
+                <div id="feedback-banner" class="min-h-[28px] flex items-center justify-center mb-3 text-center">
+                    <span id="feedback-text" class="text-xs sm:text-sm font-extrabold opacity-0 transition-opacity duration-150"></span>
                 </div>
 
-                <!-- 4 Choices Grid -->
+                <!-- 4 Choices Grid (for 4-choice mode) -->
                 <div id="choices-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <!-- Buttons injected by JS -->
+                </div>
+
+                <!-- Word Bank Pool (for Reorder mode) -->
+                <div id="reorder-pool" class="hidden flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 pt-1">
+                    <!-- Word chips injected by JS -->
                 </div>
             </div>
 
@@ -298,371 +362,431 @@
 
     <script>
         /**
-         * 50問の関係詞問題データベース
-         * - standardQuestions: 30問（標準レベル：プリント準拠の基本〜標準的な関係代名詞・関係副詞・前置詞＋関係代名詞）
-         * - hardQuestions: 20問（5コンボ以上・高難度レベル：前置詞＋関係代名詞の応用、非制限用法、whatとthat/whichの識別、無生物のwhose、複雑な文構造）
+         * 全50問の関係詞問題データベース（プリント準拠・基礎〜標準＋やや応用レベル）
+         * - 4択空所補充問題: 30問（標準18問 / 5コンボ以上・応用12問）
+         * - 語句整序（並べ替え）問題: 20問（標準12問 / 5コンボ以上・応用8問）
          */
-        const STANDARD_QUESTIONS = [
+        const CHOICE_STANDARD_QUESTIONS = [
             {
-                id: 1,
+                id: "c1", type: "choice",
+                ja: "あれは私が犬を見つけた人です。",
                 sentence: "That is the person (      ) dog I found.",
                 choices: ["who", "his", "whose", "that"],
                 answer: 2,
                 explanation: "先行詞 the person と後ろの名詞 dog の間に「その人の犬（所有格）」の関係があるので whose を選びます。"
             },
             {
-                id: 2,
+                id: "c2", type: "choice",
+                ja: "エイダには遅刻したもっともな理由があった。",
                 sentence: "Ada had a good reason (      ) she was late.",
                 choices: ["why", "for", "where", "what"],
                 answer: 0,
                 explanation: "先行詞 a good reason（理由）の後ろに完全な文 she was late が続いているため、関係副詞 why を使います。"
             },
             {
-                id: 3,
+                id: "c3", type: "choice",
+                ja: "これは私がガールフレンドと出会った公園です。",
                 sentence: "This is the park in (      ) I met my girlfriend.",
                 choices: ["where", "which", "who", "that"],
                 answer: 1,
                 explanation: "直前に前置詞 in があるため関係副詞 where や that は使えず、関係代名詞 which（in which = where）を選びます。"
             },
             {
-                id: 4,
+                id: "c4", type: "choice",
+                ja: "月曜日は図書館が閉まっている日です。",
                 sentence: "Monday is the day (      ) the library is closed.",
                 choices: ["which", "when", "where", "what"],
                 answer: 1,
                 explanation: "先行詞 the day（時）の後ろに完全な文 the library is closed が続いているため、関係副詞 when を使います。"
             },
             {
-                id: 5,
+                id: "c5", type: "choice",
+                ja: "私は200年前に建てられたホテルに泊まった。",
                 sentence: "I stayed at a hotel (      ) was built 200 years ago.",
                 choices: ["where", "who", "that", "what"],
                 answer: 2,
                 explanation: "後ろに主語が欠けた文 was built... が続いているため、主格の関係代名詞 that（または which）が必要です。"
             },
             {
-                id: 6,
+                id: "c6", type: "choice",
+                ja: "その噂がそんなに早く広まった理由を私に教えてください。",
                 sentence: "Tell me the reason (      ) the rumor spread so fast.",
                 choices: ["why", "which", "what", "when"],
                 answer: 0,
                 explanation: "先行詞 the reason に続いて完全な文（the rumor spread...）が来ているので、関係副詞 why が正解です。"
             },
             {
-                id: 7,
+                id: "c7", type: "choice",
+                ja: "私は父親が有名なピアニストである少年を知っています。",
                 sentence: "I know a boy (      ) father is a famous pianist.",
                 choices: ["who", "whom", "whose", "which"],
                 answer: 2,
                 explanation: "「その少年の父（所有格）」という意味になるため、所有格の関係代名詞 whose を使います。"
             },
             {
-                id: 8,
+                id: "c8", type: "choice",
+                ja: "これは私の祖母が生まれた家です。",
                 sentence: "This is the house (      ) my grandmother was born.",
                 choices: ["which", "where", "who", "whose"],
                 answer: 1,
                 explanation: "「その家で（in the house）」という場所を表す関係副詞 where が適切です。後ろは完全な文です。"
             },
             {
-                id: 9,
-                sentence: "Do you remember the day on (      ) we first met?",
-                choices: ["when", "that", "which", "where"],
-                answer: 2,
-                explanation: "前置詞 on の直後に置ける関係詞は which（または人なら whom）だけです。on which = when の働きをします。"
+                id: "c9", type: "choice",
+                ja: "私たちが初めて会った日を覚えていますか？",
+                sentence: "Do you remember the day (      ) we first met?",
+                choices: ["where", "when", "which", "what"],
+                answer: 1,
+                explanation: "先行詞 the day（時）の後ろに完全な文 we first met が続いているため、関係副詞 when を使います。"
             },
             {
-                id: 10,
+                id: "c10", type: "choice",
+                ja: "ピアノを弾いている少女は私の妹です。",
                 sentence: "The girl (      ) is playing the piano is my sister.",
                 choices: ["which", "who", "whom", "whose"],
                 answer: 1,
                 explanation: "先行詞が人（The girl）で、後ろに動詞 is playing が続く主格の働きなので who を選びます。"
             },
             {
-                id: 11,
+                id: "c11", type: "choice",
+                ja: "あなたがその店で買ったものを私に見せてください。",
                 sentence: "Please show me (      ) you bought at the store.",
                 choices: ["which", "that", "what", "who"],
                 answer: 2,
                 explanation: "先行詞がなく「あなたが店で買ったもの（＝the thing which）」を表す関係代名詞 what を使います。"
             },
             {
-                id: 12,
+                id: "c12", type: "choice",
+                ja: "私は彼が育った町を知りません。",
                 sentence: "I don't know the town (      ) he grew up.",
                 choices: ["where", "which", "what", "whose"],
                 answer: 0,
                 explanation: "「彼がその町で育った（grew up in the town）」という意味なので、関係副詞 where が入ります。"
             },
             {
-                id: 13,
+                id: "c13", type: "choice",
+                ja: "夏は多くの人が海へ行く季節です。",
                 sentence: "Summer is the season (      ) many people go to the beach.",
                 choices: ["where", "when", "which", "who"],
                 answer: 1,
                 explanation: "先行詞 the season（季節＝時）を修飾し、後ろに完全な文が続くため関係副詞 when が正解です。"
             },
             {
-                id: 14,
+                id: "c14", type: "choice",
+                ja: "しっぽがとても長いあの犬を見てください。",
                 sentence: "Look at the dog (      ) tail is very long.",
                 choices: ["which", "that", "whose", "who"],
                 answer: 2,
                 explanation: "先行詞が動物（the dog）であっても、「その犬のしっぽ」という所有格には whose を使います。"
             },
             {
-                id: 15,
-                sentence: "The book (      ) I read yesterday was very exciting.",
-                choices: ["who", "where", "which", "when"],
-                answer: 2,
-                explanation: "read の目的語が欠けているため、先行詞 The book を受ける目的格の関係代名詞 which が入ります。"
-            },
-            {
-                id: 16,
-                sentence: "Is this the restaurant (      ) you had lunch yesterday?",
-                choices: ["which", "where", "what", "that"],
+                id: "c15", type: "choice",
+                ja: "私が昨日読んだ本はとても面白かった。",
+                sentence: "The book (      ) I read yesterday was very interesting.",
+                choices: ["who", "which", "where", "when"],
                 answer: 1,
-                explanation: "you had lunch yesterday（S+V+O）と完全な文が続いているので、場所を表す関係副詞 where を使います。"
+                explanation: "先行詞がモノ（The book）で、read の目的語が欠けているため、目的格の関係代名詞 which（または that）を使います。"
             },
             {
-                id: 17,
-                sentence: "The man to (      ) I spoke at the station was very kind.",
-                choices: ["who", "that", "whom", "whose"],
-                answer: 2,
-                explanation: "前置詞 to の直後で先行詞が人（The man）のとき、目的格の whom を使います（to who や to that は不可）。"
-            },
-            {
-                id: 18,
+                id: "c16", type: "choice",
+                ja: "私は彼女が言ったことを理解できなかった。",
                 sentence: "I couldn't understand (      ) she said.",
                 choices: ["what", "that", "which", "why"],
                 answer: 0,
                 explanation: "先行詞がなく「彼女が言ったこと」を表す関係代名詞 what が適切です。"
             },
             {
-                id: 19,
-                sentence: "The city in (      ) I live is famous for its old temples.",
-                choices: ["where", "that", "which", "when"],
+                id: "c17", type: "choice",
+                ja: "隣に住んでいる女性は医者です。",
+                sentence: "The woman (      ) lives next door is a doctor.",
+                choices: ["which", "whose", "who", "whom"],
                 answer: 2,
-                explanation: "前置詞 in があるため which を選びます（in which = where）。"
+                explanation: "先行詞が人（The woman）で後ろに動詞 lives が続くため、主格の who が入ります。"
             },
             {
-                id: 20,
-                sentence: "He is the only student (      ) knows the answer.",
-                choices: ["which", "that", "whom", "whose"],
+                id: "c18", type: "choice",
+                ja: "あれは私たちが昨日昼食をとったレストランです。",
+                sentence: "That is the restaurant (      ) we had lunch yesterday.",
+                choices: ["which", "where", "who", "when"],
                 answer: 1,
-                explanation: "先行詞に the only がついている場合、関係代名詞は that が好まれます（選択肢の中で唯一の主格）。"
-            },
-            {
-                id: 21,
-                sentence: "There was a time (      ) there were no smartphones.",
-                choices: ["where", "when", "which", "why"],
-                answer: 1,
-                explanation: "先行詞 a time（時代・時）を修飾する関係副詞 when が入ります。"
-            },
-            {
-                id: 22,
-                sentence: "She has a friend (      ) mother works at a hospital.",
-                choices: ["who", "whom", "whose", "which"],
-                answer: 2,
-                explanation: "「その友人の母（whose mother）」という所有の関係を表す whose を選びます。"
-            },
-            {
-                id: 23,
-                sentence: "This is the exact place (      ) the accident happened.",
-                choices: ["which", "where", "what", "when"],
-                answer: 1,
-                explanation: "happen は自動詞で the accident happened は完全な文なので、場所の関係副詞 where を使います。"
-            },
-            {
-                id: 24,
-                sentence: "That's (      ) I wanted to tell you!",
-                choices: ["which", "that", "what", "where"],
-                answer: 2,
-                explanation: "「それこそが私があなたに言いたかったことです」という意味で、先行詞を含む what を使います。"
-            },
-            {
-                id: 25,
-                sentence: "The hotel at (      ) we stayed was near the airport.",
-                choices: ["where", "which", "that", "what"],
-                answer: 1,
-                explanation: "stay at a hotel の前置詞 at が前に出ているため、関係代名詞 which を選びます。"
-            },
-            {
-                id: 26,
-                sentence: "Do you know the woman (      ) Ken is talking with?",
-                choices: ["which", "whose", "whom", "where"],
-                answer: 2,
-                explanation: "前置詞 with が文末に残っている場合、目的格の whom（または who / that）を使います。"
-            },
-            {
-                id: 27,
-                sentence: "I forgot the reason (      ) he got angry.",
-                choices: ["why", "where", "which", "what"],
-                answer: 0,
-                explanation: "先行詞 the reason の後ろに完全な文 he got angry が続くため、関係副詞 why を使います。"
-            },
-            {
-                id: 28,
-                sentence: "Everything (      ) he says is true.",
-                choices: ["who", "what", "that", "where"],
-                answer: 2,
-                explanation: "先行詞が Everything のときは関係代名詞 that を使います（what は先行詞をとれないので不可）。"
-            },
-            {
-                id: 29,
-                sentence: "1995 was the year (      ) my brother was born.",
-                choices: ["which", "where", "when", "why"],
-                answer: 2,
-                explanation: "先行詞 the year（年＝時）に完全な文が続くため、関係副詞 when が正解です。"
-            },
-            {
-                id: 30,
-                sentence: "I visited Kyoto, (      ) is famous for its history.",
-                choices: ["where", "which", "that", "what"],
-                answer: 1,
-                explanation: "カンマ（,）の後ろに主語が欠けた文 is famous... が続いているため、非制限用法の主格 which を使います。"
+                explanation: "「そこで私たちが昼食をとった（had lunch at the restaurant）」という場所を表す関係副詞 where が正解です。"
             }
         ];
 
-        const HARD_QUESTIONS = [
+        // 5コンボ以上（高難度レベル・和訳非表示：the way in which、無生物のof which、all of whom、such ... as など）
+        const CHOICE_HARD_QUESTIONS = [
             {
-                id: 31,
-                sentence: "That is the way (      ) he solved the difficult problem.",
-                choices: ["how", "in which", "which", "what"],
+                id: "c19", type: "choice",
+                ja: "私は彼女がその問題を解決したやり方に驚いた。",
+                sentence: "I was surprised at the way in (      ) she solved the problem.",
+                choices: ["how", "which", "that", "what"],
                 answer: 1,
-                explanation: "the way と how は一緒に使えません！代わりに the way in which または the way that を使います。"
+                explanation: "the way と how は同時に使えませんが、「the way in which 〜（〜する方法）」の形なら正しい表現になります。"
             },
             {
-                id: 32,
-                sentence: "He didn't pass the exam, (      ) surprised all of us.",
-                choices: ["that", "what", "which", "where"],
-                answer: 2,
-                explanation: "前の文全体（試験に落ちたこと）を先行詞とする非制限用法には、カンマ＋which を使います（that は不可）。"
-            },
-            {
-                id: 33,
-                sentence: "I bought a house, the roof of (      ) is painted red.",
-                choices: ["that", "whose", "which", "it"],
-                answer: 2,
-                explanation: "「その家の屋根（the roof of the house）」を表す表現で、前置詞 of の後ろなので which を選びます。"
-            },
-            {
-                id: 34,
-                sentence: "This is the house (      ) roof is painted green.",
-                choices: ["which", "whose", "of which", "that"],
-                answer: 1,
-                explanation: "無生物（the house）が先行詞でも「その家の屋根」と所有格になる場合は whose をそのまま使えます。"
-            },
-            {
-                id: 35,
-                sentence: "The speed at (      ) light travels is astonishing.",
-                choices: ["that", "where", "which", "how"],
-                answer: 2,
-                explanation: "at a speed（〜の速度で）の at が前に出た「前置詞＋関係代名詞」の形なので which が正解です。"
-            },
-            {
-                id: 36,
-                sentence: "She has two sons, both of (      ) live in Tokyo.",
-                choices: ["who", "whom", "them", "whose"],
-                answer: 1,
-                explanation: "カンマで2つの節をつなぐ関係代名詞の働きが必要で、前置詞 of の後ろなので whom を使います（them は接続詞が必要）。"
-            },
-            {
-                id: 37,
-                sentence: "We moved to Osaka, (      ) we lived for ten years.",
-                choices: ["which", "that", "where", "what"],
-                answer: 2,
-                explanation: "「そしてそこで（and there）」と場所を表す非制限用法の関係副詞 where が適切です。"
-            },
-            {
-                id: 38,
-                sentence: "Reading is to the mind (      ) food is to the body.",
-                choices: ["that", "which", "what", "as"],
-                answer: 2,
-                explanation: "「A is to B what C is to D（AとBの関係はCとDの関係と同じだ）」という重要構文の what です。"
-            },
-            {
-                id: 39,
-                sentence: "The train by (      ) we came was delayed by snow.",
-                choices: ["which", "that", "where", "what"],
-                answer: 0,
-                explanation: "come by train（電車で来る）の by が関係代名詞の前に移動した形で、by which が正解です。"
-            },
-            {
-                id: 40,
-                sentence: "I gave him (      ) little money I had with me.",
-                choices: ["which", "what", "that", "whose"],
-                answer: 1,
-                explanation: "「what little + 名詞」で「少ないながらも〜だけのすべての…」という意味を表す関係形容詞 what の用法です。"
-            },
-            {
-                id: 41,
-                sentence: "This is the very book (      ) I have been looking for.",
-                choices: ["which", "what", "that", "where"],
-                answer: 2,
-                explanation: "先行詞に the very（まさにその）がつく場合、関係代名詞は that を使うのが原則です。"
-            },
-            {
-                id: 42,
-                sentence: "The purpose for (      ) he came to Japan is to study architecture.",
-                choices: ["why", "that", "which", "what"],
-                answer: 2,
-                explanation: "for the purpose（その目的のために）の前置詞 for が前に出た形なので、which を選びます。"
-            },
-            {
-                id: 43,
-                sentence: "He is not the cheerful boy (      ) he used to be.",
-                choices: ["who", "that", "whom", "which"],
-                answer: 1,
-                explanation: "補語（C）の働きをする関係代名詞（かつての彼）は、先行詞が人であっても that を使います。"
-            },
-            {
-                id: 44,
-                sentence: "The extent to (      ) she can be trusted is uncertain.",
+                id: "c20", type: "choice",
+                ja: "私たちが泊まったホテルの部屋からは海が見えた。",
+                sentence: "The hotel room at (      ) we stayed had a view of the ocean.",
                 choices: ["where", "which", "that", "what"],
                 answer: 1,
-                explanation: "to the extent（〜の程度まで）の前置詞 to が前に出た形（to which）です。"
+                explanation: "stay at the room の前置詞 at が前に出ているため、関係代名詞 which（at which = where）を選びます。"
             },
             {
-                id: 45,
-                sentence: "I met Mr. Sato, (      ) I recognized at once.",
-                choices: ["that", "whom", "whose", "which"],
+                id: "c21", type: "choice",
+                ja: "私は屋根が緑色に塗られた家に住んでいます。",
+                sentence: "I live in a house the roof of (      ) is painted green.",
+                choices: ["whose", "which", "that", "it"],
                 answer: 1,
-                explanation: "recognized の目的語が欠けており、先行詞が人（Mr. Sato）の非制限用法なので whom を使います。"
+                explanation: "無生物の所有格を表す「the + 名詞 + of which（＝ whose + 名詞）」の構文です。"
             },
             {
-                id: 46,
-                sentence: "There is no rule (      ) has some exceptions.",
-                choices: ["who", "but", "what", "where"],
+                id: "c22", type: "choice",
+                ja: "私には3人の兄弟がいて、その全員が東京に住んでいます。",
+                sentence: "I have three brothers, all of (      ) live in Tokyo.",
+                choices: ["who", "them", "whom", "whose"],
+                answer: 2,
+                explanation: "接続詞がないため代名詞 them は不可。前置詞 of の後ろで人を受ける非制限用法なので whom を使います。"
+            },
+            {
+                id: "c23", type: "choice",
+                ja: "彼は約束を破ったが、それが私たち全員をがっかりさせた。",
+                sentence: "He broke his promise, (      ) disappointed all of us.",
+                choices: ["that", "what", "which", "where"],
+                answer: 2,
+                explanation: "前の文全体（約束を破ったこと）を先行詞とする非制限用法では、カンマ＋which を使います（that は不可）。"
+            },
+            {
+                id: "c24", type: "choice",
+                ja: "私たちが先週訪れた美術館は100年以上前に建てられた。",
+                sentence: "The museum (      ) we visited last week was built over 100 years ago.",
+                choices: ["where", "which", "when", "in which"],
                 answer: 1,
-                explanation: "疑似関係代名詞 but（〜ない…はない＝that ... not）の用法です。「例外のない規則はない」という意味になります。"
+                explanation: "visit は他動詞で目的語が欠けている（不完全な文）ため、場所が先行詞でも関係副詞 where ではなく which を選びます。"
             },
             {
-                id: 47,
-                sentence: "The company (      ) I work for is expanding rapidly.",
-                choices: ["where", "which", "whose", "when"],
+                id: "c25", type: "choice",
+                ja: "これは私が彼女と連絡を取り合うための手段です。",
+                sentence: "This is the means by (      ) I keep in touch with her.",
+                choices: ["how", "which", "that", "what"],
                 answer: 1,
-                explanation: "後ろに work for の目的語が欠けている（不完全な文）ため、where ではなく関係代名詞 which を選びます。"
+                explanation: "by means of 〜（〜という手段で）に由来し、前置詞 by の後ろなので関係代名詞 which（by which）を使います。"
             },
             {
-                id: 48,
-                sentence: "She is a woman of (      ) I have heard many good things.",
+                id: "c26", type: "choice",
+                ja: "彼女はパリへ引っ越し、そこで有名なデザイナーになった。",
+                sentence: "She moved to Paris, (      ) she became a famous designer.",
+                choices: ["which", "that", "where", "what"],
+                answer: 2,
+                explanation: "カンマ＋where で「そしてそこで（and there）」と場所を補足説明する非制限用法の表現です。"
+            },
+            {
+                id: "c27", type: "choice",
+                ja: "あなたが今持っているようなスマートフォンを私も買いたい。",
+                sentence: "I want to buy such a smartphone (      ) you have now.",
+                choices: ["which", "as", "what", "who"],
+                answer: 1,
+                explanation: "先行詞に such がついているとき、疑似関係代名詞 as（such A as 〜：〜のようなA）を使います。"
+            },
+            {
+                id: "c28", type: "choice",
+                ja: "彼がそこまで怒らなければならない理由は何かありますか？",
+                sentence: "Is there any reason for (      ) he has to get so angry?",
+                choices: ["why", "which", "that", "what"],
+                answer: 1,
+                explanation: "前置詞 for が前に出ているため、why ではなく関係代名詞 which（for which = why）を選びます。"
+            },
+            {
+                id: "c29", type: "choice",
+                ja: "私が駅で話しかけた男性はとても親切に道を教えてくれた。",
+                sentence: "The man to (      ) I spoke at the station gave me kind directions.",
                 choices: ["who", "that", "whom", "whose"],
                 answer: 2,
-                explanation: "hear of a woman（ある女性について聞く）の前置詞 of が前に出ているため、whom が正解です。"
+                explanation: "前置詞 to の直後で人が先行詞のときは、目的格の whom のみ使えます（to who や to that は不可）。"
             },
             {
-                id: 49,
-                sentence: "Do you know the cafe (      ) we visited last week?",
-                choices: ["where", "which", "when", "why"],
-                answer: 1,
-                explanation: "visit は他動詞で visited の目的語が欠けているため、場所の名詞が先行詞でも where ではなく which を選びます！"
+                id: "c30", type: "choice",
+                ja: "彼女の成功の秘訣は、私たちが「努力」と呼ぶものだ。",
+                sentence: "The secret of her success is (      ) we call hard work.",
+                choices: ["that", "which", "what", "who"],
+                answer: 2,
+                explanation: "「what we call 〜（いわゆる〜、私たちが〜と呼ぶもの）」という関係代名詞 what の重要慣用表現です。"
+            }
+        ];
+
+        // 並べ替え問題（標準12問：和訳付き）
+        const REORDER_STANDARD_QUESTIONS = [
+            {
+                id: "r1", type: "reorder",
+                ja: "警察官が、自分の車を盗まれた男性に話しかけています。",
+                prefix: "",
+                words: ["A police officer", "is talking", "to the man", "whose"],
+                suffix: "car was stolen.",
+                explanation: "「その人の車が盗まれた男性（the man whose car was stolen）」に警察官が話しかけている、という所有格 whose の語順です。"
             },
             {
-                id: 50,
-                sentence: "He is such a kind person (      ) everyone respects.",
-                choices: ["who", "as", "which", "whom"],
-                answer: 1,
-                explanation: "先行詞に such がついている場合、疑似関係代名詞 as（such A as ...）を呼応させるのが標準的です。"
+                id: "r2", type: "reorder",
+                ja: "月曜日は図書館が閉まっている日です。",
+                prefix: "Monday",
+                words: ["is", "when", "the library", "is closed"],
+                suffix: ".",
+                explanation: "先行詞 the day を省略した関係副詞 when（〜する時）を使い、「月曜日は図書館が閉まっている日です」という文を作ります。"
+            },
+            {
+                id: "r3", type: "reorder",
+                ja: "私は200年前に建てられたホテルに泊まった。",
+                prefix: "I",
+                words: ["stayed at", "a hotel", "that", "was built"],
+                suffix: "200 years ago.",
+                explanation: "stayed at a hotel（ホテルに泊まった）の後ろに、主格の関係代名詞 that was built...（200年前に建てられた）をつなげます。"
+            },
+            {
+                id: "r4", type: "reorder",
+                ja: "その噂がそんなに早く広まった理由を私に教えてください。",
+                prefix: "Please",
+                words: ["tell me", "the reason", "why", "the rumor", "spread"],
+                suffix: "so fast.",
+                explanation: "tell me the reason（私に理由を教えて）の後ろに、関係副詞 why + S + V（the rumor spread）を続けます。"
+            },
+            {
+                id: "r5", type: "reorder",
+                ja: "これは私がよく犬を散歩させる公園です。",
+                prefix: "This is",
+                words: ["the park", "where", "I", "often", "walk"],
+                suffix: "my dog.",
+                explanation: "先行詞 the park（公園）を関係副詞 where（そこで私がよく犬を散歩させる）で後ろから修飾します。"
+            },
+            {
+                id: "r6", type: "reorder",
+                ja: "あなたは父親が医者であるその少女を知っていますか？",
+                prefix: "Do you know",
+                words: ["the girl", "whose", "father", "is", "a doctor"],
+                suffix: "?",
+                explanation: "「その少女の父が医者である（whose father is a doctor）」という所有格の関係代名詞の語順です。"
+            },
+            {
+                id: "r7", type: "reorder",
+                ja: "あなたが手の中に持っているものを私に見せてください。",
+                prefix: "Show me",
+                words: ["what", "you", "have", "in your", "hand"],
+                suffix: ".",
+                explanation: "先行詞を含む関係代名詞 what を使い、「あなたが手の中に持っているもの（what you have in your hand）」を作ります。"
+            },
+            {
+                id: "r8", type: "reorder",
+                ja: "私が昨日買った本はとても面白かった。",
+                prefix: "The book",
+                words: ["which", "I", "bought", "yesterday", "was"],
+                suffix: "very interesting.",
+                explanation: "主語 The book を目的格の関係代名詞節 which I bought yesterday（私が昨日買った）が修飾し、動詞 was につながります。"
+            },
+            {
+                id: "r9", type: "reorder",
+                ja: "私たちが東京で初めて会った日を覚えています。",
+                prefix: "I remember",
+                words: ["the day", "when", "we", "first", "met"],
+                suffix: "in Tokyo.",
+                explanation: "先行詞 the day を関係副詞 when（私たちが初めて会った日）で修飾する基本語順です。"
+            },
+            {
+                id: "r10", type: "reorder",
+                ja: "ドアのそばに立っている女性は私の叔母です。",
+                prefix: "The woman",
+                words: ["who", "is standing", "by the door", "is"],
+                suffix: "my aunt.",
+                explanation: "主語 The woman の直後に主格の who is standing by the door（ドアのそばに立っている）を置き、動詞 is へつなげます。"
+            },
+            {
+                id: "r11", type: "reorder",
+                ja: "私は昨年、父が私にくれた腕時計をなくした。",
+                prefix: "I lost",
+                words: ["the watch", "that", "my father", "gave", "me"],
+                suffix: "last year.",
+                explanation: "「父が私にくれた腕時計（the watch that my father gave me）」という目的格の関係代名詞節を作ります。"
+            },
+            {
+                id: "r12", type: "reorder",
+                ja: "私には姉がパリに住んでいる友達がいます。",
+                prefix: "I have",
+                words: ["a friend", "whose", "sister", "lives", "in Paris"],
+                suffix: ".",
+                explanation: "「その人の姉がパリに住んでいる友達（a friend whose sister lives in Paris）」という所有格 whose の語順です。"
+            }
+        ];
+
+        // 並べ替え問題（5コンボ以上・高難度8問・和訳非表示：前置詞＋関係詞、非制限用法、無生物of which、the way in which など）
+        const REORDER_HARD_QUESTIONS = [
+            {
+                id: "r13", type: "reorder",
+                ja: "あれは私の叔父が住んでいる家です。",
+                prefix: "That is",
+                words: ["the house", "in which", "my", "uncle", "lives"],
+                suffix: ".",
+                explanation: "live in the house の前置詞 in を関係代名詞の前に置いた the house in which my uncle lives（叔父が住んでいる家）の形です。"
+            },
+            {
+                id: "r14", type: "reorder",
+                ja: "彼はテストに落ちたが、そのことが両親を悲しませた。",
+                prefix: "He failed",
+                words: ["the test,", "which", "made", "his parents", "sad"],
+                suffix: ".",
+                explanation: "前の文全体（テストに落ちたこと）を受ける非制限用法の , which に make + O + C（両親を悲しませた）を続けます。"
+            },
+            {
+                id: "r15", type: "reorder",
+                ja: "私が昨日話しかけた男性はとても礼儀正しかった。",
+                prefix: "The man",
+                words: ["to whom", "I", "spoke", "yesterday", "was"],
+                suffix: "very polite.",
+                explanation: "speak to the man の前置詞 to が前に出た The man to whom I spoke yesterday（私が昨日話しかけた男性）が主語になります。"
+            },
+            {
+                id: "r16", type: "reorder",
+                ja: "私は彼に、その時持っていたすべてのお金を渡した。",
+                prefix: "I",
+                words: ["gave him", "all", "the money", "that", "I had"],
+                suffix: "at that time.",
+                explanation: "先行詞に all がついているため関係代名詞 that を使い、all the money that I had（私が持っていたすべてのお金）を作ります。"
+            },
+            {
+                id: "r17", type: "reorder",
+                ja: "私は彼女が料理をするやり方が大好きです。",
+                prefix: "I love",
+                words: ["the way", "in which", "she", "cooks", "dinner"],
+                suffix: ".",
+                explanation: "「〜する方法」を表す the way in which S + V（how は併用不可）の語順です。"
+            },
+            {
+                id: "r18", type: "reorder",
+                ja: "私たちは京都を訪れ、そこで3日間滞在した。",
+                prefix: "We visited",
+                words: ["Kyoto,", "where", "we", "stayed", "for three days"],
+                suffix: ".",
+                explanation: "カンマ＋where で「京都を訪れ、そしてそこで3日間滞在した」と場所を補足する非制限用法の語順です。"
+            },
+            {
+                id: "r19", type: "reorder",
+                ja: "私には2人の娘がいて、2人とも医者です。",
+                prefix: "She has",
+                words: ["two daughters,", "both", "of whom", "are", "doctors"],
+                suffix: ".",
+                explanation: "非制限用法の「both of whom（その2人とも）」を使った重要な語順です。"
+            },
+            {
+                id: "r20", type: "reorder",
+                ja: "私たちは屋根が赤く塗られているその家を見た。",
+                prefix: "We saw",
+                words: ["the house", "the roof", "of which", "was", "painted red"],
+                suffix: ".",
+                explanation: "無生物の所有格を表す「the house the roof of which（＝ whose roof）」の語順です。"
             }
         ];
 
         // --- Game State ---
-        const GAME_DURATION = 90.0; // seconds
-        const HIGH_SCORE_KEY = "relative_pronoun_90s_highscore_v1";
+        const GAME_DURATION = 90.0;
+        const HIGH_SCORE_KEY = "relative_pronoun_90s_mix_highscore_v1";
 
         let state = {
+            selectedMode: "mix", // "mix" | "choice" | "reorder"
             score: 0,
             highScore: 0,
             combo: 0,
@@ -675,12 +799,14 @@
             isTransitioning: false,
             currentQuestion: null,
             currentIsHard: false,
-            usedStandardIds: new Set(),
-            usedHardIds: new Set(),
-            history: [] // { question, userChoiceIndex, isCorrect, isHard }
+            usedIds: new Set(),
+            // Reorder state
+            shuffledBank: [], // [{ id, text, used }]
+            selectedWordIds: [],
+            history: []
         };
 
-        // --- Web Audio API Synthesizer (No external audio files needed) ---
+        // --- Web Audio API Synthesizer ---
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -704,20 +830,26 @@
             osc.connect(gain);
             gain.connect(audioCtx.destination);
 
-            if (type === "correct") {
+            if (type === "tap") {
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(587.33, now); // D5
-                osc.frequency.setValueAtTime(880, now + 0.07); // A5
+                osc.frequency.setValueAtTime(660, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                osc.start(now);
+                osc.stop(now + 0.07);
+            } else if (type === "correct") {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.setValueAtTime(880, now + 0.07);
                 gain.gain.setValueAtTime(0.18, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
                 osc.start(now);
                 osc.stop(now + 0.23);
             } else if (type === "fever") {
-                // Exciting 3-note arpeggio for reaching 5+ combo
                 osc.type = "triangle";
-                osc.frequency.setValueAtTime(523.25, now); // C5
-                osc.frequency.setValueAtTime(659.25, now + 0.06); // E5
-                osc.frequency.setValueAtTime(1046.50, now + 0.12); // C6
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.06);
+                osc.frequency.setValueAtTime(1046.50, now + 0.12);
                 gain.gain.setValueAtTime(0.22, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
                 osc.start(now);
@@ -759,12 +891,37 @@
         const feverLabelEl = document.getElementById("fever-label");
         const questionCardEl = document.getElementById("question-card");
         const questionNumberEl = document.getElementById("question-number");
+        const questionTypeBadgeEl = document.getElementById("question-type-badge");
         const questionTagEl = document.getElementById("question-tag");
+        const translationBoxEl = document.getElementById("translation-box");
+        const questionTranslationEl = document.getElementById("question-translation");
+
+        const choiceModeArea = document.getElementById("choice-mode-area");
         const questionTextEl = document.getElementById("question-text");
-        const feedbackTextEl = document.getElementById("feedback-text");
         const choicesGridEl = document.getElementById("choices-grid");
 
-        // Load saved high score
+        const reorderModeArea = document.getElementById("reorder-mode-area");
+        const reorderPrefixEl = document.getElementById("reorder-prefix");
+        const reorderSuffixEl = document.getElementById("reorder-suffix");
+        const reorderAnswerSlotsEl = document.getElementById("reorder-answer-slots");
+        const reorderPoolEl = document.getElementById("reorder-pool");
+
+        const feedbackTextEl = document.getElementById("feedback-text");
+
+        // --- Mode Selector UI ---
+        document.querySelectorAll(".mode-option-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                state.selectedMode = btn.dataset.mode;
+                document.querySelectorAll(".mode-option-btn").forEach(b => {
+                    if (b.dataset.mode === state.selectedMode) {
+                        b.className = "mode-option-btn py-2.5 px-2 rounded-xl text-xs sm:text-sm font-black bg-indigo-500 text-white shadow-md transition-all cursor-pointer";
+                    } else {
+                        b.className = "mode-option-btn py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
+                    }
+                });
+            });
+        });
+
         function loadHighScore() {
             try {
                 const saved = localStorage.getItem(HIGH_SCORE_KEY);
@@ -778,54 +935,165 @@
         function saveHighScore(newScore) {
             try {
                 localStorage.setItem(HIGH_SCORE_KEY, String(newScore));
-            } catch (e) {
-                // Ignore storage errors in restricted environments
+            } catch (e) {}
+        }
+
+        // --- Combo UI & Score Popup Helpers ---
+        function updateComboUI() {
+            const isHard = state.combo >= 5;
+
+            if (state.combo === 0) {
+                comboCountEl.textContent = "0 COMBO";
+                comboCountEl.className = "text-xl sm:text-2xl font-black text-slate-400 transition-all";
+            } else if (isHard) {
+                comboCountEl.textContent = `${state.combo} COMBO 🔥`;
+                comboCountEl.className = "text-xl sm:text-2xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 bg-clip-text text-transparent transition-all scale-105";
+            } else {
+                comboCountEl.textContent = `${state.combo} COMBO!`;
+                comboCountEl.className = "text-xl sm:text-2xl font-black text-cyan-400 transition-all";
+            }
+
+            // 5-combo gauge dots
+            for (let i = 1; i <= 5; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (!dot) continue;
+                if (state.combo >= i) {
+                    dot.className = i === 5
+                        ? "w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.9)] transition-all scale-110"
+                        : "w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)] transition-all";
+                } else {
+                    dot.className = i === 5
+                        ? "w-3.5 h-3.5 rounded-full bg-slate-700 border border-amber-500/40 transition-all"
+                        : "w-3 h-3 rounded-full bg-slate-700 transition-all";
+                }
+            }
+
+            // Hard / Fever mode visuals
+            if (isHard) {
+                feverLabelEl.classList.remove("hidden");
+                modeBadgeEl.textContent = "🔥 HARD (2x SCORE)";
+                modeBadgeEl.className = "px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wide bg-gradient-to-r from-amber-500/30 to-rose-500/30 text-amber-300 border border-amber-400/60 transition-all duration-300";
+                questionCardEl.classList.add("fever-card");
+                bgGlow.className = "fixed inset-0 pointer-events-none opacity-50 transition-all duration-700 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/70 via-slate-950 to-slate-950";
+            } else {
+                feverLabelEl.classList.add("hidden");
+                modeBadgeEl.textContent = "STANDARD";
+                modeBadgeEl.className = "px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wide bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 transition-all duration-300";
+                questionCardEl.classList.remove("fever-card");
+                bgGlow.className = "fixed inset-0 pointer-events-none opacity-40 transition-all duration-700 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-950 to-slate-950";
             }
         }
 
-        // --- Question Selection Logic ---
+        function spawnScorePopup(points, isHard) {
+            const pop = document.createElement("div");
+            pop.textContent = `+${points}`;
+            pop.className = `score-popup font-black text-sm sm:text-base whitespace-nowrap ${
+                isHard ? "text-amber-400" : "text-emerald-400"
+            }`;
+            scorePopupContainer.appendChild(pop);
+            setTimeout(() => {
+                pop.remove();
+            }, 650);
+        }
+
+        // --- Question Pool & Selection ---
+        function getQuestionPool(isHard) {
+            let pool = [];
+            if (state.selectedMode === "mix") {
+                pool = isHard
+                    ? [...CHOICE_HARD_QUESTIONS, ...REORDER_HARD_QUESTIONS]
+                    : [...CHOICE_STANDARD_QUESTIONS, ...REORDER_STANDARD_QUESTIONS];
+            } else if (state.selectedMode === "choice") {
+                pool = isHard ? CHOICE_HARD_QUESTIONS : CHOICE_STANDARD_QUESTIONS;
+            } else {
+                pool = isHard ? REORDER_HARD_QUESTIONS : REORDER_STANDARD_QUESTIONS;
+            }
+            return pool;
+        }
+
         function pickNextQuestion() {
             const isHardMode = state.combo >= 5;
             state.currentIsHard = isHardMode;
 
-            const pool = isHardMode ? HARD_QUESTIONS : STANDARD_QUESTIONS;
-            const usedSet = isHardMode ? state.usedHardIds : state.usedStandardIds;
+            const pool = getQuestionPool(isHardMode);
+            let available = pool.filter(q => !state.usedIds.has(q.id));
 
-            // Reset used pool if all questions in this tier have been answered
-            if (usedSet.size >= pool.length) {
-                usedSet.clear();
+            if (available.length === 0) {
+                pool.forEach(q => state.usedIds.delete(q.id));
+                available = pool;
             }
 
-            const available = pool.filter(q => !usedSet.has(q.id));
             const chosen = available[Math.floor(Math.random() * available.length)];
-            usedSet.add(chosen.id);
-
+            state.usedIds.add(chosen.id);
             state.currentQuestion = chosen;
+
             renderQuestion(chosen, isHardMode);
         }
 
         function renderQuestion(q, isHard) {
             questionNumberEl.textContent = `Q.${state.totalAnswered + 1}`;
+            feedbackTextEl.style.opacity = "0";
 
             if (isHard) {
                 questionTagEl.textContent = "🔥 高難度 (HARD) ・ 得点2倍";
                 questionTagEl.className = "px-2.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300";
+
+                // Hide Japanese translation during 5+ combo HARD mode
+                translationBoxEl.className = "mb-4 px-3.5 py-2 rounded-xl bg-amber-950/30 border border-amber-500/30 text-center transition-all duration-300";
+                translationBoxEl.innerHTML = `
+                    <p class="text-xs font-extrabold text-amber-300/90 flex items-center justify-center gap-1.5">
+                        <span>🔒 HARDモード中：和訳非表示（ミスで和訳付き標準モードに戻ります）</span>
+                    </p>
+                `;
             } else {
                 questionTagEl.textContent = "標準 (STANDARD)";
                 questionTagEl.className = "px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300";
+
+                // Show Japanese translation in Standard mode (0-4 combo)
+                translationBoxEl.className = "mb-4 px-3.5 py-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-center transition-all duration-300";
+                translationBoxEl.innerHTML = `
+                    <div class="flex items-center justify-center gap-1.5 text-[11px] font-bold text-indigo-300 mb-0.5">
+                        <span>🇯🇵 日本語訳</span>
+                    </div>
+                    <p id="question-translation" class="text-sm sm:text-base font-bold text-slate-100 leading-snug">${q.ja}</p>
+                `;
             }
 
-            // Format blank nicely
+            if (q.type === "choice") {
+                questionTypeBadgeEl.textContent = "4択空所補充";
+                questionTypeBadgeEl.className = "px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
+
+                choiceModeArea.classList.remove("hidden");
+                choicesGridEl.classList.remove("hidden");
+                reorderModeArea.classList.add("hidden");
+                reorderPoolEl.classList.add("hidden");
+
+                renderChoiceQuestion(q, isHard);
+            } else {
+                questionTypeBadgeEl.textContent = "🧩 語句整序 (並べ替え)";
+                questionTypeBadgeEl.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+
+                choiceModeArea.classList.add("hidden");
+                choicesGridEl.classList.add("hidden");
+                reorderModeArea.classList.remove("hidden");
+                reorderPoolEl.classList.remove("hidden");
+
+                renderReorderQuestion(q, isHard);
+            }
+
+            questionCardEl.classList.remove("animate-pop");
+            void questionCardEl.offsetWidth;
+            questionCardEl.classList.add("animate-pop");
+        }
+
+        // --- Render 4-Choice Question ---
+        function renderChoiceQuestion(q, isHard) {
             const formattedSentence = q.sentence.replace(
                 /\(\s+\)/,
                 `<span class="inline-block min-w-[84px] sm:min-w-[100px] border-b-2 border-dashed ${isHard ? 'border-amber-400 text-amber-300' : 'border-cyan-400 text-cyan-300'} mx-1 px-2 text-center">( ? )</span>`
             );
             questionTextEl.innerHTML = formattedSentence;
 
-            // Reset feedback banner
-            feedbackTextEl.style.opacity = "0";
-
-            // Render 4 option buttons
             const circledNumbers = ["①", "②", "③", "④"];
             choicesGridEl.innerHTML = "";
 
@@ -846,70 +1114,118 @@
                     } transition-colors">${circledNumbers[idx]}</span>
                     <span class="tracking-wide">${choiceText}</span>
                 `;
-                btn.addEventListener("click", () => handleAnswer(idx));
+                btn.addEventListener("click", () => handleChoiceAnswer(idx));
                 choicesGridEl.appendChild(btn);
             });
-
-            // Trigger pop animation on card content
-            questionCardEl.classList.remove("animate-pop");
-            void questionCardEl.offsetWidth;
-            questionCardEl.classList.add("animate-pop");
         }
 
-        // --- Update UI for Combo & Fever Mode ---
-        function updateComboUI() {
-            const c = state.combo;
-            const isFever = c >= 5;
+        // --- Render Reorder Question ---
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            // Ensure shuffled order differs from original answer order
+            if (copy.every((item, idx) => item.text === arr[idx].text) && copy.length > 1) {
+                [copy[0], copy[1]] = [copy[1], copy[0]];
+            }
+            return copy;
+        }
 
-            comboCountEl.textContent = `${c} COMBO`;
-            if (c === 0) {
-                comboCountEl.className = "text-xl sm:text-2xl font-black text-slate-500 transition-all";
-            } else if (isFever) {
-                comboCountEl.className = "text-2xl sm:text-3xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 bg-clip-text text-transparent transition-all";
+        function renderReorderQuestion(q, isHard) {
+            reorderPrefixEl.textContent = q.prefix;
+            reorderSuffixEl.textContent = q.suffix;
+
+            const indexedWords = q.words.map((w, i) => ({ id: i, text: w, used: false }));
+            state.shuffledBank = shuffleArray(indexedWords);
+            state.selectedWordIds = [];
+
+            updateReorderUI(isHard);
+        }
+
+        function updateReorderUI(isHard) {
+            // Render selected slots
+            reorderAnswerSlotsEl.innerHTML = "";
+            if (state.selectedWordIds.length === 0) {
+                const placeholder = document.createElement("span");
+                placeholder.className = "text-xs sm:text-sm text-slate-500 font-normal px-3 py-1 border border-dashed border-slate-700 rounded-xl";
+                placeholder.textContent = "ここに語句が並びます";
+                reorderAnswerSlotsEl.appendChild(placeholder);
             } else {
-                comboCountEl.className = "text-xl sm:text-2xl font-black text-cyan-400 transition-all";
+                state.selectedWordIds.forEach(wordId => {
+                    const item = state.shuffledBank.find(w => w.id === wordId);
+                    const chip = document.createElement("button");
+                    chip.type = "button";
+                    chip.textContent = item.text;
+                    chip.className = `px-3 py-1.5 rounded-xl font-extrabold text-sm sm:text-base shadow transition active:scale-95 cursor-pointer ${
+                        isHard
+                            ? "bg-amber-500 text-slate-950 hover:bg-amber-400"
+                            : "bg-cyan-400 text-slate-950 hover:bg-cyan-300"
+                    }`;
+                    chip.addEventListener("click", () => {
+                        if (state.isTransitioning || !state.isPlaying) return;
+                        playSound("tap");
+                        item.used = false;
+                        state.selectedWordIds = state.selectedWordIds.filter(id => id !== wordId);
+                        updateReorderUI(isHard);
+                    });
+                    reorderAnswerSlotsEl.appendChild(chip);
+                });
             }
 
-            // Update 5 dots gauge
-            for (let i = 1; i <= 5; i++) {
-                const dot = document.getElementById(`dot-${i}`);
-                if (c >= i) {
-                    dot.className = i === 5
-                        ? "w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24] scale-110 transition-all"
-                        : "w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] transition-all";
+            // Render word pool chips
+            reorderPoolEl.innerHTML = "";
+            state.shuffledBank.forEach(item => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.textContent = item.text;
+                btn.disabled = item.used || state.isTransitioning;
+
+                if (item.used) {
+                    btn.className = "px-3.5 py-2.5 rounded-xl border-2 border-slate-800 bg-slate-900/40 text-slate-600 font-bold text-sm sm:text-base opacity-40 cursor-default";
                 } else {
-                    dot.className = i === 5
-                        ? "w-3.5 h-3.5 rounded-full bg-slate-700 border border-amber-500/40 transition-all"
-                        : "w-3 h-3 rounded-full bg-slate-700 transition-all";
+                    btn.className = `px-3.5 py-2.5 rounded-xl border-2 font-bold text-sm sm:text-base shadow-md transition active:scale-95 cursor-pointer ${
+                        isHard
+                            ? "bg-slate-800 border-slate-600 hover:border-amber-400 text-white"
+                            : "bg-slate-800 border-slate-600 hover:border-cyan-400 text-white"
+                    }`;
+                    btn.addEventListener("click", () => {
+                        if (state.isTransitioning || !state.isPlaying || item.used) return;
+                        playSound("tap");
+                        item.used = true;
+                        state.selectedWordIds.push(item.id);
+                        updateReorderUI(isHard);
+
+                        // Auto-submit when all words are placed
+                        if (state.selectedWordIds.length === state.currentQuestion.words.length) {
+                            handleReorderSubmit();
+                        }
+                    });
                 }
-            }
-
-            // Visual Fever Mode Transformation
-            if (isFever) {
-                feverLabelEl.classList.remove("hidden");
-                modeBadgeEl.textContent = "🔥 HARD (5+ COMBO)";
-                modeBadgeEl.className = "px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wide bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-lg shadow-amber-500/30 transition-all duration-300";
-                questionCardEl.classList.add("fever-card");
-                bgGlow.className = "fixed inset-0 pointer-events-none opacity-50 transition-all duration-700 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-700/50 via-rose-950/40 to-slate-950";
-            } else {
-                feverLabelEl.classList.add("hidden");
-                modeBadgeEl.textContent = "STANDARD";
-                modeBadgeEl.className = "px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wide bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 transition-all duration-300";
-                questionCardEl.classList.remove("fever-card");
-                bgGlow.className = "fixed inset-0 pointer-events-none opacity-40 transition-all duration-700 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-950 to-slate-950";
-            }
+                reorderPoolEl.appendChild(btn);
+            });
         }
 
-        function spawnScorePopup(points, isHard) {
-            const popup = document.createElement("div");
-            popup.textContent = `+${points}`;
-            popup.className = `score-popup font-black text-base sm:text-lg ${isHard ? "text-amber-400" : "text-emerald-400"}`;
-            scorePopupContainer.appendChild(popup);
-            setTimeout(() => popup.remove(), 650);
-        }
+        document.getElementById("reorder-undo-btn").addEventListener("click", () => {
+            if (state.isTransitioning || !state.isPlaying || state.selectedWordIds.length === 0) return;
+            playSound("tap");
+            const lastId = state.selectedWordIds.pop();
+            const item = state.shuffledBank.find(w => w.id === lastId);
+            if (item) item.used = false;
+            updateReorderUI(state.currentIsHard);
+        });
 
-        // --- Handle Player Choice ---
-        function handleAnswer(selectedIndex) {
+        document.getElementById("reorder-clear-btn").addEventListener("click", () => {
+            if (state.isTransitioning || !state.isPlaying || state.selectedWordIds.length === 0) return;
+            playSound("tap");
+            state.selectedWordIds = [];
+            state.shuffledBank.forEach(item => item.used = false);
+            updateReorderUI(state.currentIsHard);
+        });
+
+        // --- Handle 4-Choice Answer ---
+        function handleChoiceAnswer(selectedIndex) {
             if (!state.isPlaying || state.isTransitioning) return;
             state.isTransitioning = true;
 
@@ -917,15 +1233,19 @@
             const isCorrect = selectedIndex === q.answer;
             state.totalAnswered++;
 
-            // Record for post-game review
+            const correctWord = q.choices[q.answer];
+            const userWord = q.choices[selectedIndex];
+            const completedSentence = q.sentence.replace(/\(\s+\)/, `[ ${correctWord} ]`);
+
             state.history.push({
                 question: q,
-                userChoiceIndex: selectedIndex,
+                userAnswerText: userWord,
+                correctAnswerText: correctWord,
+                completedSentence: completedSentence,
                 isCorrect: isCorrect,
                 isHard: state.currentIsHard
             });
 
-            // Highlight buttons
             const buttons = choicesGridEl.querySelectorAll(".choice-btn");
             buttons.forEach((btn, idx) => {
                 btn.disabled = true;
@@ -938,13 +1258,52 @@
                 }
             });
 
-            // Fill in the blank with correct answer
-            const correctWord = q.choices[q.answer];
             questionTextEl.innerHTML = q.sentence.replace(
                 /\(\s+\)/,
                 `<span class="inline-block px-2.5 py-0.5 mx-1 rounded-lg ${isCorrect ? "bg-emerald-500/25 text-emerald-300 border border-emerald-400/50" : "bg-rose-500/25 text-rose-300 border border-rose-400/50"}">${correctWord}</span>`
             );
 
+            processResultAndAdvance(isCorrect, 100, correctWord);
+        }
+
+        // --- Handle Reorder Submit ---
+        function handleReorderSubmit() {
+            if (!state.isPlaying || state.isTransitioning) return;
+            state.isTransitioning = true;
+
+            const q = state.currentQuestion;
+            const userWords = state.selectedWordIds.map(id => state.shuffledBank.find(w => w.id === id).text);
+            const userPhrase = userWords.join(" ");
+            const correctPhrase = q.words.join(" ");
+            const isCorrect = userPhrase === correctPhrase;
+
+            state.totalAnswered++;
+
+            const fullCorrectSentence = `${q.prefix ? q.prefix + " " : ""}[ ${correctPhrase} ]${q.suffix.startsWith(".") || q.suffix.startsWith("?") ? q.suffix : " " + q.suffix}`.trim();
+
+            state.history.push({
+                question: q,
+                userAnswerText: userPhrase,
+                correctAnswerText: correctPhrase,
+                completedSentence: fullCorrectSentence,
+                isCorrect: isCorrect,
+                isHard: state.currentIsHard
+            });
+
+            // Style placed chips as green or red
+            const slotButtons = reorderAnswerSlotsEl.querySelectorAll("button");
+            slotButtons.forEach(btn => {
+                btn.className = isCorrect
+                    ? "px-3 py-1.5 rounded-xl font-extrabold text-sm sm:text-base bg-emerald-400 text-slate-950 shadow"
+                    : "px-3 py-1.5 rounded-xl font-extrabold text-sm sm:text-base bg-rose-500 text-white shadow";
+            });
+
+            // Reorder gives 180 base points (more than 4-choice)
+            processResultAndAdvance(isCorrect, 180, correctPhrase);
+        }
+
+        // --- Shared Scoring & Transition ---
+        function processResultAndAdvance(isCorrect, baseStandardPoints, correctText) {
             if (isCorrect) {
                 state.correctCount++;
                 state.combo++;
@@ -952,8 +1311,7 @@
                     state.maxCombo = state.combo;
                 }
 
-                // Calculate points: Standard = 100 base, Hard = 200 base, + combo bonus
-                const basePoints = state.currentIsHard ? 200 : 100;
+                const basePoints = state.currentIsHard ? baseStandardPoints * 2 : baseStandardPoints;
                 const comboBonus = Math.min(state.combo * 20, 200);
                 const earned = basePoints + comboBonus;
                 state.score += earned;
@@ -964,25 +1322,23 @@
                 if (state.combo === 5) {
                     playSound("fever");
                     feedbackTextEl.textContent = "🔥 5 COMBO達成！高難度・高得点モード突入！";
-                    feedbackTextEl.className = "text-sm sm:text-base font-black text-amber-400 transition-opacity duration-150";
+                    feedbackTextEl.className = "text-xs sm:text-base font-black text-amber-400 transition-opacity duration-150";
                 } else {
                     playSound("correct");
                     feedbackTextEl.textContent = `⭕ GREAT! (+${earned} pts)`;
-                    feedbackTextEl.className = "text-sm font-extrabold text-emerald-400 transition-opacity duration-150";
+                    feedbackTextEl.className = "text-xs sm:text-sm font-extrabold text-emerald-400 transition-opacity duration-150";
                 }
                 feedbackTextEl.style.opacity = "1";
                 updateComboUI();
 
-                // Fast transition for snappy arcade pace
                 setTimeout(() => {
                     if (state.isPlaying) {
                         state.isTransitioning = false;
                         pickNextQuestion();
                     }
-                }, 420);
+                }, 480);
 
             } else {
-                // Wrong answer: reset combo to 0
                 state.combo = 0;
                 playSound("wrong");
                 updateComboUI();
@@ -991,17 +1347,17 @@
                 void questionCardEl.offsetWidth;
                 questionCardEl.classList.add("animate-shake");
 
-                feedbackTextEl.textContent = `❌ 正解は「${correctWord}」 (コンボリセット)`;
-                feedbackTextEl.className = "text-sm font-extrabold text-rose-400 transition-opacity duration-150";
+                feedbackTextEl.textContent = `❌ 正解: ${correctText}`;
+                feedbackTextEl.className = "text-xs sm:text-sm font-extrabold text-rose-400 transition-opacity duration-150";
                 feedbackTextEl.style.opacity = "1";
 
-                // Slightly longer pause on mistake so player can see the right word
+                const delay = state.currentQuestion.type === "reorder" ? 1150 : 850;
                 setTimeout(() => {
                     if (state.isPlaying) {
                         state.isTransitioning = false;
                         pickNextQuestion();
                     }
-                }, 850);
+                }, delay);
             }
         }
 
@@ -1016,8 +1372,7 @@
             state.timeLeft = GAME_DURATION;
             state.isPlaying = true;
             state.isTransitioning = false;
-            state.usedStandardIds.clear();
-            state.usedHardIds.clear();
+            state.usedIds.clear();
             state.history = [];
 
             scoreTextEl.textContent = "0";
@@ -1045,7 +1400,6 @@
                 const pct = (state.timeLeft / GAME_DURATION) * 100;
                 timerBarEl.style.width = `${pct}%`;
 
-                // Color warning as time runs low
                 if (state.timeLeft <= 15) {
                     timerTextEl.className = "text-2xl sm:text-3xl font-black tabular-nums text-rose-400 animate-pulse";
                     timerBarEl.className = "h-full rounded-full bg-gradient-to-r from-rose-500 to-red-600 transition-all duration-100 ease-linear";
@@ -1067,17 +1421,14 @@
             clearInterval(state.timerInterval);
             playSound("finish");
 
-            // Reset background glow
             bgGlow.className = "fixed inset-0 pointer-events-none opacity-40 transition-all duration-700 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-slate-950 to-slate-950";
 
-            // High score check
             const isNewRecord = state.score > state.highScore && state.score > 0;
             if (isNewRecord) {
                 state.highScore = state.score;
                 saveHighScore(state.highScore);
             }
 
-            // Populate Result Screen
             document.getElementById("new-record-badge").classList.toggle("hidden", !isNewRecord);
             document.getElementById("result-score").textContent = `${state.score.toLocaleString()} pts`;
             document.getElementById("result-correct").textContent = `${state.correctCount}問`;
@@ -1088,7 +1439,6 @@
                 : 0;
             document.getElementById("result-accuracy").textContent = `${accuracy}%`;
 
-            // Rank Evaluation
             const rankEl = document.getElementById("result-rank");
             if (state.score >= 3800) {
                 rankEl.textContent = "S+";
@@ -1129,13 +1479,11 @@
                 return;
             }
 
-            items.forEach((item, index) => {
+            items.forEach(item => {
                 const q = item.question;
-                const correctWord = q.choices[q.answer];
-                const userWord = q.choices[item.userChoiceIndex];
-                const completedSentence = q.sentence.replace(
-                    /\(\s+\)/,
-                    `<span class="underline decoration-2 font-extrabold ${item.isCorrect ? "text-emerald-300 decoration-emerald-400" : "text-amber-300 decoration-amber-400"}">${correctWord}</span>`
+                const highlightedSentence = item.completedSentence.replace(
+                    /\[ (.*?) \]/,
+                    `<span class="underline decoration-2 font-extrabold ${item.isCorrect ? "text-emerald-300 decoration-emerald-400" : "text-amber-300 decoration-amber-400"}">$1</span>`
                 );
 
                 const card = document.createElement("div");
@@ -1146,18 +1494,19 @@
                 }`;
 
                 card.innerHTML = `
-                    <div class="flex items-center justify-between gap-2 mb-1.5">
-                        <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                        <div class="flex items-center gap-1.5">
                             <span class="text-xs font-black px-2 py-0.5 rounded ${
                                 item.isCorrect ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
                             }">${item.isCorrect ? "⭕ 正解" : "❌ 不正解"}</span>
+                            <span class="text-[11px] font-bold px-2 py-0.5 rounded ${
+                                q.type === "reorder" ? "bg-emerald-500/15 text-emerald-300" : "bg-cyan-500/15 text-cyan-300"
+                            }">${q.type === "reorder" ? "🧩 並べ替え" : "🔢 4択"}</span>
                             ${item.isHard ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">🔥 HARD</span>' : ''}
                         </div>
-                        <span class="text-xs text-slate-400">
-                            ${item.isCorrect ? `解答: <strong class="text-emerald-300">${userWord}</strong>` : `あなたの解答: <strong class="text-rose-300 line-through">${userWord}</strong> → 正解: <strong class="text-emerald-300">${correctWord}</strong>`}
-                        </span>
-                    </div>
-                    <p class="text-sm sm:text-base font-bold text-white mb-2">${completedSentence}</p>
+                    <p class="text-sm sm:text-base font-bold text-white mb-1">${highlightedSentence}</p>
+                    <p class="text-xs text-indigo-200/80 mb-2">訳: ${q.ja}</p>
+                    ${!item.isCorrect ? `<div class="text-xs text-rose-300 mb-2">あなたの解答: <span class="line-through">${item.userAnswerText}</span></div>` : ""}
                     <p class="text-xs text-slate-300 bg-slate-900/70 p-2.5 rounded-xl border border-slate-800 leading-relaxed">
                         💡 ${q.explanation}
                     </p>
@@ -1186,16 +1535,22 @@
             renderReviewList(e.target.checked);
         });
 
-        // Keyboard shortcuts (1, 2, 3, 4)
+        // Keyboard shortcuts (1, 2, 3, 4 for 4-choice mode; Backspace for undo in reorder mode)
         document.addEventListener("keydown", (e) => {
             if (!state.isPlaying || state.isTransitioning) return;
-            if (["1", "2", "3", "4"].includes(e.key)) {
-                const idx = parseInt(e.key, 10) - 1;
-                handleAnswer(idx);
+            if (state.currentQuestion && state.currentQuestion.type === "choice") {
+                if (["1", "2", "3", "4"].includes(e.key)) {
+                    const idx = parseInt(e.key, 10) - 1;
+                    handleChoiceAnswer(idx);
+                }
+            } else if (state.currentQuestion && state.currentQuestion.type === "reorder") {
+                if (e.key === "Backspace" && state.selectedWordIds.length > 0) {
+                    e.preventDefault();
+                    document.getElementById("reorder-undo-btn").click();
+                }
             }
         });
 
-        // Initialize on page load
         window.onload = () => {
             loadHighScore();
         };
